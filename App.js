@@ -1,37 +1,59 @@
-import React, { useState, useEffect} from 'react';
-import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import HomeScreen from './Screens/HomeScreen';
 import CartScreen from './Screens/CartScreen';
 import { CartProvider } from './context/CartContext';
 import HomeStackNavigator from './HomeStackNavigator';
-import { useNavigation } from "@react-navigation/native";
-import CartIcon from './cartIcon';
 import LocationsScreen from './Screens/LocationsScreen';
 import BlogScreen from './Screens/BlogScreen';
 import ClothingScreen from './Screens/ClothingScreen';
 import JewelryScreen from './Screens/JewelryScreen';
 import ElectronicScreen from './Screens/ElectronicScreen';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import CartIcon from './cartIcon'
 
 const Drawer = createDrawerNavigator();
 
+const CustomDrawerContent = (props) => {
+  const navigation = useNavigation();
+  return (
+    <DrawerContentScrollView {...props}>
+       <TouchableOpacity    onPress={() => navigation.navigate('Store')}>
+        <Image source={require('./assets/Close.png')} />
+      </TouchableOpacity>
+      <Text style={styles.header}>
+      <Text style={styles.headerText}>Eric Atsu</Text>
+       {/* Red line */}
+      </Text>
+      <View style={styles.headerLine}></View>
+      <DrawerItemList {...props} />
+    </DrawerContentScrollView>
+  );
+};
+
 export default function App() {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('Home');
 
+  const handleDrawerOpen = (isOpen) => {
+    setIsDrawerOpen(isOpen);
+  };
 
   return (
-     <CartProvider>
-        <NavigationContainer
+    <CartProvider>
+      <NavigationContainer
         style={styles.container}
         onStateChange={(state) => {
+          const isDrawerOpen = state.index !== undefined; // Assuming drawer index indicates open state
+          handleDrawerOpen(isDrawerOpen);
           const currentRoute = state.routes[state.index];
           setCurrentScreen(currentRoute.name);
         }}
       >
-        <Drawer.Navigator>
+        <Drawer.Navigator drawerContent={(props) => <CustomDrawerContent {...props} />}>
           <Drawer.Screen name="Store" component={HomeStackNavigator} />
           <Drawer.Screen name="Locations" component={LocationsScreen} />
           <Drawer.Screen name="Blog" component={BlogScreen} />
@@ -39,14 +61,15 @@ export default function App() {
           <Drawer.Screen name="Electronic" component={ElectronicScreen} />
           <Drawer.Screen name="Clothing" component={ClothingScreen} />
         </Drawer.Navigator>
-        <View
+        {!isDrawerOpen && (<View
         style={[
           styles.Logo,
           currentScreen === 'Cart' ? styles.logoCartStyle : styles.Logo,
         ]}
       >
         <Image source={require('./assets/Logo.png')} />
-      </View>
+      </View>   
+       )}
       <View
         style={[
           styles.Search,
@@ -57,7 +80,7 @@ export default function App() {
       </View>
       {currentScreen !== 'Cart' && <CartIcon />}
       </NavigationContainer>
-     </CartProvider>
+    </CartProvider>
   );
 }
 
@@ -72,23 +95,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 880,
     left: 180,
-    height: 50
+    height: 50,
   },
   Search: {
     position: 'absolute',
     bottom: 905,
     left: 360,
   },
-  ShoppingBag: {
-    position: 'absolute',
-    bottom: 910,
-    left: 400,
+  header: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
   },
-  logoCartStyle: {
-    bottom: 890
+  headerText: {
+    fontSize: 22,
   },
-  searchCartStyle: {
-    bottom: 900,
-    left: 360,
-  }
+  headerLine: {
+    borderBottomColor: 'red',
+    borderBottomWidth: 2,
+    width: '60%', // Adjust width as needed
+    marginTop: 5, // Adjust spacing from text
+  },
 });
