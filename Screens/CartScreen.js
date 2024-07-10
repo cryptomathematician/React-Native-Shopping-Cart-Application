@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext} from 'react';
-import { StyleSheet, Text, View, FlatList, Image,TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect, useContext } from 'react';
+import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { CartContext } from '../context/CartContext';
 
@@ -9,36 +8,43 @@ const CartScreen = () => {
 
     const totalPrice = cartItems.reduce((acc, item) => acc + item.price, 0);
 
-
-    const renderItem = ({ item }) => (
-        <View style={styles.cartItem}>
-            <Image source={item.image} style={styles.image} />
-            <View style={styles.itemDetails}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.description}</Text>
-                <Text style={styles.price}>${item.price}</Text>
-                <TouchableOpacity onPress={() => removeFromCart(item)}>
-                <Image source={require('../assets/remove.png')} style={styles.remove} />
-                </TouchableOpacity>
+    const renderItem = ({ item, index }) => {
+        const isRemoteImage = typeof item.image === 'string';
+        return (
+            <View style={styles.cartItem}>
+                <Image
+                    source={isRemoteImage ? { uri: item.image } : item.image}
+                    style={styles.image}
+                />
+                <View style={styles.itemDetails}>
+                    <Text style={styles.title}>{item.title}</Text>
+                    <Text style={styles.description}>{item.description}</Text>
+                    <Text style={styles.price}>${item.price}</Text>
+                    <TouchableOpacity onPress={() => removeFromCart(item)}>
+                        <Image source={require('../assets/remove.png')} style={styles.remove} />
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <View style={styles.container}>
             <Text style={styles.checkout}>CHECKOUT</Text>
-            <Image source={require('../assets/line.png')} style={styles.line}/>
+            <Image source={require('../assets/line.png')} style={styles.line} />
             <FlatList
                 data={cartItems}
                 renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
             />
-            <Text style={styles.total}>EST. TOTAL</Text>
-            <Text style={styles.totalPrice}>${totalPrice.toFixed(2)}</Text>
+            <View style={styles.totalContainer}>
+                <Text style={styles.total}>EST. TOTAL</Text>
+                <Text style={styles.totalPrice}>${totalPrice.toFixed(2)}</Text>
+            </View>
             <View style={styles.footer}>
-              <Ionicons name="bag-outline" size={30} color="red" style={styles.bag} />
-              <Text style={styles.footerText}>CHECKOUT</Text>
-          </View>
+                <Ionicons name="bag-outline" size={30} color="white" style={styles.bag} />
+                <Text style={styles.footerText}>CHECKOUT</Text>
+            </View>
         </View>
     );
 };
@@ -53,32 +59,29 @@ const styles = StyleSheet.create({
         paddingTop: 20,
     },
     cartItem: {
-        flexDirection: 'column',
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: -45,
+        marginBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        paddingBottom: 10,
     },
     itemDetails: {
         flex: 1,
-        bottom: 150,
-        left: 50
+        marginLeft: 20,
     },
     description: {
         fontSize: 14,
-      
-    },
- 
-    cartList: {
-        alignItems: 'center',
-        paddingHorizontal: 20,
+        color: '#555',
     },
     image: {
-        width: 180,
-        borderRadius: 0,
-        right: 130
+        width: 150,
+        height: 240,
+        borderRadius: 8,
     },
     title: {
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
     },
     price: {
         fontSize: 14,
@@ -87,43 +90,48 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     remove: {
-        left: 210,
+        marginTop: 10,
         width: 30,
         height: 30,
+        left: 200
     },
     checkout: {
         fontSize: 24,
-        left: 140
+        textAlign: 'center',
+        marginVertical: 10,
+    },
+    totalContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+        marginTop: 20,
     },
     total: {
-        fontSize: 20
+        fontSize: 20,
     },
     totalPrice: {
         color: 'red',
         fontSize: 20,
-        left: 340,
-        bottom: 25
     },
     footer: {
-        bottom: 0,
-        width: '140%',
         backgroundColor: '#000',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
-        right:20,
-      },
-      footerText: {
+        width: 600,
+        right: 50
+    },
+    footerText: {
         color: '#fff',
         fontSize: 24,
-        right: 60
+        marginLeft: 10,
     },
     bag: {
-        right: 70,
-        color: '#fff'
+        color: '#fff',
     },
     line: {
-        left: 70
-    }
+        alignSelf: 'center',
+        marginVertical: 10,
+    },
 });

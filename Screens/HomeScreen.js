@@ -1,18 +1,19 @@
-import React, { useState, useEffect,useContext } from 'react';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ProductCard from "../components/ProductCard";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartContext } from '../context/CartContext';
+import axios from 'axios';
 
-const productsData = [
+const localProductsData = [
     {
         id: 1,
         image: require("../assets/dress1.png"),
         title: "Office Wear",
-        description: "reversible angora cardigan",
+        description: "Office wear for you office",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
     {
         id: 2,
@@ -20,6 +21,7 @@ const productsData = [
         title: "Black",
         description: "reversible angora cardigan",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
     {
         id: 3,
@@ -27,6 +29,7 @@ const productsData = [
         title: "Church Wear",
         description: "reversible angora cardigan",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
     {
         id: 4,
@@ -34,6 +37,7 @@ const productsData = [
         title: "Lamerei",
         description: "reversible angora cardigan",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
     {
         id: 5,
@@ -41,6 +45,7 @@ const productsData = [
         title: "21WN",
         description: "reversible angora cardigan",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
     {
         id: 6,
@@ -48,6 +53,7 @@ const productsData = [
         title: "Lopo",
         description: "reversible angora cardigan",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
     {
         id: 7,
@@ -55,11 +61,38 @@ const productsData = [
         title: "21WN",
         description: "reversible angora cardigan",
         price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
+    },
+    {
+        id: 8,
+        image: require("../assets/dress7.png"),
+        title: "21WN",
+        description: "reversible angora cardigan",
+        price: 120,
+        detailDescription: 'Recycle Boucle Knit Cardigan Pink'
     },
 ];
 
 const HomeScreen = () => {
     const { addToCart } = useContext(CartContext);
+    const navigation = useNavigation();
+    const [products, setProducts] = useState(localProductsData);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setLoading(true);
+        axios
+            .get('https://fakestoreapi.com/products')
+            .then(res => {
+                const fetchedProducts = res.data.map(product => ({
+                    ...product,
+                    isLocal: false,
+                }));
+                setProducts([...localProductsData, ...fetchedProducts]);
+            })
+            .catch(e => console.log(e))
+            .finally(() => setLoading(false));
+    }, []);
 
     const renderItem = ({ item }) => (
         <View style={styles.productCard}>
@@ -68,29 +101,36 @@ const HomeScreen = () => {
                 title={item.title}
                 description={item.description}
                 price={item.price}
+                detailDescription={item.detailDescription}
                 addCart={() => addToCart(item)}
+                onPress={() => navigation.navigate('ProductDetail', { item })}
+                isLocal={item.isLocal !== false}
             />
         </View>
     );
 
     return (
         <View style={styles.container}>
-            <View style={styles.Category}>
+            <View style={styles.category}>
                 <Text style={styles.story}>OUR STORY</Text>
                 <Ionicons name="list-outline" size={30} color="black" style={styles.list} />
                 <Ionicons name="filter-outline" size={30} color="red" style={styles.filter} />
             </View>
-            <FlatList
-                data={productsData}
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#000" />
+                </View>
+            ) : (
+                <FlatList
+                data={products}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id.toString() || index.toString()}
+                keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
                 contentContainerStyle={[styles.productList, { flexWrap: 'wrap', flexDirection: 'row' }]}
             />
+            )}
         </View>
     );
 };
-
-export default HomeScreen;
 
 const styles = StyleSheet.create({
     container: {
@@ -103,7 +143,7 @@ const styles = StyleSheet.create({
         width: '50%',
         padding: 8,
     },
-    Category: {
+    category: {
         flexDirection: 'row',
     },
     story: {
@@ -122,4 +162,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         left: 20,
     },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
 });
+
+export default HomeScreen;

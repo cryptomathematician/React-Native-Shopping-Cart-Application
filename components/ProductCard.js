@@ -1,10 +1,15 @@
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 
-const ProductCard = ({ image, title, price, description, addCart }) => {
+const ProductCard = ({ image, title, price, description, addCart,onPress, isLocal}) => {
+    const isRemoteImage = typeof image === 'string';
     return (
-        <View style={styles.card}>
-            <Image source={image} style={styles.image} />
+        <TouchableOpacity onPress={onPress}>
+             <View style={isLocal ? styles.card1 : styles.card}>
+            <Image
+                source={isRemoteImage ? { uri: image } : image}
+                style={styles.image}
+            />
             <View style={styles.itemDetails}>
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.description}>{description}</Text>
@@ -13,7 +18,8 @@ const ProductCard = ({ image, title, price, description, addCart }) => {
             <TouchableOpacity onPress={addCart}>
                 <Image source={require('../assets/addCircle.png')} style={styles.addCart} />
             </TouchableOpacity>
-        </View>
+            </View>
+        </TouchableOpacity>
     );
 }
 
@@ -29,11 +35,11 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 4, height: 4 },
         elevation: 3,
         alignItems: 'center',
-        marginBottom: 20,
         padding: 10,
         flex: 1,
         width: 180,
-        height: 320,
+        height: 840,
+        marginBottom: 80
     },
     image: {
         width: 180,
@@ -61,5 +67,19 @@ const styles = StyleSheet.create({
     },
     itemDetails: {
         flex: 1,
+    },
+    card1: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 4, height: 4 },
+        elevation: 3,
+        alignItems: 'center',
+        padding: 10,
+        flex: 1,
+        width: 180,
+        height: 340,
     },
 });
